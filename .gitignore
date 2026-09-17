@@ -32,6 +32,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.production.example
+
+# local deploy artifacts
+kavcom-site-hostinger.zip
+tmp-user-bug.png
+/exports/
 
 # vercel
 .vercel
@@ -39,3 +45,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# WordPress export (large)
+kavcomexpert.WordPress*.xml

@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kavcom Expert
 
-## Getting Started
+Next.js marketing site and admin CMS for Kavcom Expert.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful scripts:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run db:migrate` — apply Drizzle migrations (local / dev `DATABASE_URL`)
+- `npm run db:migrate:prod` — apply migrations to production (set `DATABASE_URL` to your Neon **production** connection string first)
+- `npm run db:seed-admin` — create the initial admin user
+- `npm run build` / `npm start` — production
 
-## Learn More
+## Database migrations (required before deploy)
 
-To learn more about Next.js, take a look at the following resources:
+If a deploy changes `src/lib/db/schema.ts`, **run migrations against production before `npm run build` on the host**. A schema mismatch (e.g. missing `services.hero_visual`) causes Postgres error `42703` during static page generation.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Point at production Neon (run locally or on the VPS — not from CI unless intended)
+export DATABASE_URL="postgresql://…your-prod-neon-url…"
+npm run db:migrate:prod
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Then deploy and build. See `deploy.md` for the full release order.
 
-## Deploy on Vercel
+## SECURITY
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Secrets rotation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Rotate these whenever someone with access leaves, a secret may have leaked, or on a regular schedule (at least every 90 days for production):
+
+1. **`BETTER_AUTH_SECRET`** — generate a new long random value, update the host env, redeploy, then sign in again (existing sessions invalidate).
+2. **Database URL (`DATABASE_URL` / Neon)** — rotate the Neon role password in the Neon console, update env, redeploy.
+3. **R2 / S3 credentials** (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) — create a new API token in Cloudflare, update env, revoke the old token.
+4. **`RESEND_API_KEY`** — create a new key in Resend, update env, delete the old key.
+5. **`INDEXNOW_KEY`** — generate a new key, run `npm run indexnow:setup`, update search engine registrations if needed.
+6. **`NEXT_PUBLIC_GA_ID` / `NEXT_PUBLIC_CLARITY_ID`** — not secret, but rotate property access in Google/Microsoft admin if staff change.
+
+Never commit `.env` files. Prefer host-level env vars (Hostinger / VPS) over files on disk.
+
+### npm and sudo
+
+**Never run any `npm` (or `npx`, `yarn`, `pnpm`) command with `sudo`.** Installing packages as root creates root-owned `node_modules`, breaks permissions, and is a security risk. Fix ownership with your user account instead, for example:
+
+```bash
+sudo chown -R "$(whoami)" node_modules
+```
+
+Then re-run `npm install` without sudo.
+
+### Auth and 2FA
+
+Admin sign-up is disabled. Enable TOTP 2FA under **Admin → Security**. Keep backup codes offline. Use **Sign out everywhere** after a suspected compromise.

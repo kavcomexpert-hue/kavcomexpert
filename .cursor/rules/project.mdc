@@ -1,0 +1,44 @@
+---
+alwaysApply: true
+---
+description: Kavcom project rules, always apply
+alwaysApply: true
+---
+## UI freeze
+The public site UI is FINISHED. Never modify the visual design, styles, animations, or layout of existing public pages. Backend tasks replace hardcoded content with data fetched from the database, keeping markup and classes identical. If a data shape doesn't fit the existing UI, adapt the data layer, not the UI.
+
+
+# Project rules for kavcom-site. Follow these on EVERY task.
+
+## Scope discipline
+- Do ONLY what the current prompt asks. Do not create extra pages, components, routes, or features "while you're at it."
+- Do not install any npm package unless the prompt names it. If you believe one is needed, stop and ask.
+- Do not modify files unrelated to the current task. Never rewrite working files wholesale; make minimal edits.
+- Never delete or rename existing files unless explicitly told.
+- If a prompt is ambiguous, ask ONE clarifying question instead of guessing.
+
+## Stack (fixed, never substitute)
+- Next.js App Router, TypeScript strict, Server Components by default, "use client" only when interactivity requires it
+- Tailwind CSS v4 using ONLY the design tokens in globals.css. Never invent hex values or arbitrary colors.
+- Drizzle ORM + Postgres (Neon). All DB access through lib/db. Never raw SQL.
+- Better Auth for authentication. Zod for ALL input validation.
+- Framer Motion for animation. No other animation libraries unless a prompt names them.
+- No CSS-in-JS, no styled-components, no MUI/Chakra/Bootstrap, ever.
+
+## Architecture patterns
+- Mutations use Server Actions in src/actions/, each starting with a session check via lib/auth, then Zod parse, then DB call, then revalidateTag.
+- Public pages fetch through functions in src/lib/queries/ with next tags for ISR. Only status='published' rows on public pages.
+- Admin routes live under src/app/(admin)/admin/, public under src/app/(site)/.
+- Shared UI in src/components/ui/, admin-only in src/components/admin/, site-only in src/components/site/.
+
+## Design system (Apple-like light + dark mode)
+- Theming via CSS variables defined in globals.css with a .dark class variant. next-themes manages the toggle. Every color in components MUST reference a token (bg-background, text-foreground, border-border, text-muted, bg-accent, etc). Zero hardcoded colors in components.
+- Generous whitespace, 4px spacing grid, max content width 1120px, minimal borders (1px, subtle), soft shadows only.
+- Typography: display font for headlines, body font for text, mono for data/labels. Use next/font.
+- Motion is subtle: 0.5s ease [0.22,1,0.36,1], translate max 24px, animate once. Always respect prefers-reduced-motion.
+
+## Quality bar
+- Every image via next/image with alt text. Semantic HTML: one h1 per page, proper landmarks.
+- Every form validated by Zod on the server. Loading and error states on every async UI.
+- After any task, state which files you created/changed in a short list.
+---

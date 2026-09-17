@@ -1,0 +1,3 @@
+ALTER TABLE "posts" ADD COLUMN "tldr" text;--> statement-breakpoint
+ALTER TABLE "posts" ADD COLUMN "key_takeaways" jsonb;--> statement-breakpoint
+ALTER TABLE "posts" ADD COLUMN "post_faqs" jsonb;

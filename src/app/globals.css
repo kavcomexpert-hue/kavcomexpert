@@ -1,26 +1,412 @@
 @import "tailwindcss";
 
+/* ── Light mode ──
+   Brand palette from the Kavcom logo: emerald green. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf8;
+  --surface: #ffffff;
+  --foreground: #1d1d1f;
+  --muted: #57575c;
+  --border: #e8e8e3;
+  --accent: #14996e;
+  --accent-lime: #2dd4a0;
+  --success: #1a7f4b;
+  --danger: #c93434;
+
+  --radius: 14px;
+
+  --shadow-soft: 0 1px 2px rgba(29, 29, 31, 0.04),
+    0 4px 16px rgba(29, 29, 31, 0.06);
+  --shadow-glow: none;
+  --logo-surface: #ffffff;
+  --review-card: #ffffff;
+  --review-ink: #1d1d1f;
+  --review-muted: #57575c;
+  --review-border: #e8e8e3;
+  --star-gold: #e8b923;
+}
+
+/* ── Dark mode (site default) ── */
+.dark {
+  --background: #0a0a0c;
+  --surface: #141416;
+  --foreground: #f5f5f7;
+  --muted: #8e8e93;
+  --border: rgba(255, 255, 255, 0.1);
+  --accent: #3ecf9a;
+  --accent-lime: #6ee7b7;
+  --success: #3dd68c;
+  --danger: #ff6b6b;
+
+  --shadow-soft: none;
+  --shadow-glow: 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 28px rgba(62, 207, 154, 0.12);
+  --logo-surface: #f5f5f7;
+  --review-card: #f5f5f7;
+  --review-ink: #1d1d1f;
+  --review-muted: #57575c;
+  --review-border: #e4e4e7;
+  --star-gold: #f5c542;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-lime: var(--accent-lime);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-logo-surface: var(--logo-surface);
+  --color-review-card: var(--review-card);
+  --color-review-ink: var(--review-ink);
+  --color-review-muted: var(--review-muted);
+  --color-review-border: var(--review-border);
+  --color-star-gold: var(--star-gold);
+
+  --font-display: var(--font-brand);
+  --font-sans: var(--font-brand);
+  --font-mono: var(--font-brand);
+
+  --radius-default: var(--radius);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-glow: var(--shadow-glow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .skip-to-content {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 100;
+    transform: translateY(-200%);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--foreground);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s ease;
+  }
+
+  .skip-to-content:focus-visible {
+    transform: translateY(0);
+  }
+
+  .tiptap-content :is(h2, h3) {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .tiptap-content h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin: 1.25rem 0 0.75rem;
+  }
+
+  .tiptap-content h3 {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin: 1rem 0 0.5rem;
+  }
+
+  .tiptap-content p {
+    margin: 0.75rem 0;
+    line-height: 1.65;
+  }
+
+  .tiptap-content ul,
+  .tiptap-content ol {
+    margin: 0.75rem 0;
+    padding-left: 1.25rem;
+  }
+
+  .tiptap-content blockquote {
+    margin: 1rem 0;
+    padding-left: 1rem;
+    border-left: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .tiptap-content pre {
+    margin: 1rem 0;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius);
+    background: var(--background);
+    overflow-x: auto;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.875rem;
+  }
+
+  .tiptap-content img {
+    max-width: 100%;
+    border-radius: var(--radius);
+    margin: 1rem 0;
+  }
+
+  .tiptap-content .rich-text-table-wrap,
+  .rich-text .rich-text-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tiptap-content table,
+  .rich-text table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .tiptap-content th,
+  .tiptap-content td,
+  .rich-text th,
+  .rich-text td {
+    border: 1px solid var(--border);
+    padding: 0.5rem 0.75rem;
+    vertical-align: top;
+  }
+
+  .tiptap-content th,
+  .rich-text th {
+    background: var(--surface);
+    font-weight: 600;
+  }
+
+  .faq-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  details[open] .faq-content {
+    grid-template-rows: 1fr;
+  }
+
+  .faq-content > div {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-content {
+      transition: none;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* CSS-only blur entrance for non-LCP chrome. Starts nearly opaque so it
+   cannot become the LCP element (hero H1 paints without this class). */
+@keyframes enter-blur {
+  from {
+    opacity: 0.2;
+    transform: translateY(12px);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes logo-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@layer utilities {
+  .animate-enter {
+    animation: enter-blur 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-enter {
+      animation: none;
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-marquee-reverse {
+    animation: marquee-reverse 44s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-logo-marquee {
+    animation: logo-marquee 90s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  .logo-marquee-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 8%,
+      black 92%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 8%,
+      black 92%,
+      transparent
+    );
+  }
+
+  .logo-marquee-track:hover .animate-logo-marquee {
+    animation-play-state: paused;
+  }
+
+  .marquee-pause-hover:hover .animate-marquee,
+  .marquee-pause-hover:hover .animate-marquee-reverse {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-dup-half {
+      display: none;
+    }
+  }
+
+  .marquee-motion {
+    display: block;
+  }
+
+  .marquee-static {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-motion {
+      display: none;
+    }
+
+    .marquee-static {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee,
+    .animate-marquee-reverse,
+    .animate-logo-marquee {
+      animation: none;
+    }
+  }
+
+  .range-input {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    cursor: pointer;
+  }
+
+  .range-input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  .range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 2px solid var(--surface);
+    background: var(--accent);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .range-input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 2px solid var(--surface);
+    background: var(--accent);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .liquid-blob-shape {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    animation: liquid-morph 12s ease-in-out infinite;
+  }
+
+  @keyframes liquid-morph {
+    0%,
+    100% {
+      border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    }
+    33% {
+      border-radius: 68% 32% 40% 60% / 35% 58% 42% 65%;
+    }
+    66% {
+      border-radius: 55% 45% 62% 38% / 52% 36% 64% 48%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .liquid-blob-shape {
+      animation: none;
+    }
+  }
 }
