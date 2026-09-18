@@ -78,10 +78,15 @@ const nextConfig: NextConfig = {
   // Keep remaining actions small (forms, JSON) under this limit.
   experimental: {
     serverActions: {
-      bodySizeLimit: "4mb",
+      bodySizeLimit: "6mb",
+      allowedOrigins: [
+        "kavcomexpert.com",
+        "*.kavcomexpert.com",
+      ],
     },
   },
   transpilePackages: ["@splinetool/react-spline", "@splinetool/runtime"],
+  
   images: {
     remotePatterns,
     // WebP-only: AVIF encode is much heavier on Sharp/RSS for similar visual quality.
