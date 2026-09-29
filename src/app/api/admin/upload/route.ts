@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 /** Allow large multipart bodies (Hostinger / Node pipeline). */
 export const maxDuration = 300;
 

@@ -1,5 +1,8 @@
 import { auth, type Session } from "@/lib/auth";
-import { hasSessionCookie } from "@/lib/auth/has-session-cookie";
+import {
+  cookieHeaderHasSession,
+  hasSessionCookie,
+} from "@/lib/auth/has-session-cookie";
 import {
   hasRole,
   parseAppRole,
@@ -57,16 +60,23 @@ async function assertActiveUser(session: Session): Promise<Session> {
 async function getSessionWithRetry(): Promise<Session | null> {
   // Skip Better Auth entirely when no session cookie — no DB, no crypto work.
   const cookieStore = await cookies();
-  if (!hasSessionCookie(cookieStore)) {
+  const requestHeaders = await headers();
+  if (
+    !hasSessionCookie(cookieStore) &&
+    !cookieHeaderHasSession(requestHeaders.get("cookie"))
+  ) {
     return null;
   }
 
-  const requestHeaders = await headers();
-  // Neon cold starts often need longer than a default query retry window.
+  // Always GET: this helper is called from POST routes (uploads) and Server
+  // Actions. Better Auth origin/CSRF middleware treats POST + Cookie as a
+  // mutation and 403s when Origin does not match BETTER_AUTH_URL (www vs apex,
+  // or a proxy that strips Origin).
   return withDbRetry(
     () =>
       auth.api.getSession({
         headers: requestHeaders,
+        method: "GET",
       }),
     { attempts: 6, delayMs: 700 },
   );

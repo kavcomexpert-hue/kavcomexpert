@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { trustedActionHosts } from "./src/lib/security/trusted-origins";
 
 const r2PublicUrl = process.env.R2_PUBLIC_URL;
 const r2Hostname = r2PublicUrl ? new URL(r2PublicUrl).hostname : null;
@@ -76,13 +77,13 @@ const nextConfig: NextConfig = {
   // `.next/static` and `public` into the standalone folder, which breaks CSS/JS.
   // Large media uploads go through /api/admin/upload, not Server Actions.
   // Keep remaining actions small (forms, JSON) under this limit.
+  allowedDevOrigins: trustedActionHosts(),
   experimental: {
+    // Middleware/proxy clones POST bodies; default 10MB truncates media uploads.
+    proxyClientMaxBodySize: "160mb",
     serverActions: {
       bodySizeLimit: "6mb",
-      allowedOrigins: [
-        "kavcomexpert.com",
-        "*.kavcomexpert.com",
-      ],
+      allowedOrigins: trustedActionHosts(),
     },
   },
   transpilePackages: ["@splinetool/react-spline", "@splinetool/runtime"],

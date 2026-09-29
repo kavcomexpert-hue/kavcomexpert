@@ -13,6 +13,7 @@ import {
   STAFF_MARKER_COOKIE,
   staffMarkerCookieOptions,
 } from "@/lib/auth/marker-cookies";
+import { isTrustedActionHost } from "@/lib/security/trusted-origins";
 import { publicUrl, SITE_URL } from "@/lib/seo/constants";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -132,8 +133,30 @@ function redirectTo(
   return withMarkerCookies(request, response);
 }
 
+function withTrustedForwardedHost(request: NextRequest): Headers {
+  const headers = new Headers(request.headers);
+  const originHeader = request.headers.get("origin");
+  if (!originHeader || originHeader === "null") return headers;
+  try {
+    const originHost = new URL(originHeader).host;
+    if (isTrustedActionHost(originHost)) {
+      // Hostinger binds Node to 0.0.0.0. If the proxy Host / X-Forwarded-Host
+      // is the bind address, Next.js Server Action CSRF aborts the POST.
+      headers.set("x-forwarded-host", originHost);
+    }
+  } catch {
+    // Ignore malformed Origin.
+  }
+  return headers;
+}
+
 function next(request: NextRequest): NextResponse {
-  return withMarkerCookies(request, NextResponse.next());
+  return withMarkerCookies(
+    request,
+    NextResponse.next({
+      request: { headers: withTrustedForwardedHost(request) },
+    }),
+  );
 }
 
 function rewriteMaintenance(request: NextRequest): NextResponse {
@@ -168,32 +191,35 @@ export async function middleware(request: NextRequest) {
       !pathname.startsWith("/admin/invite/")
     ) {
       if (!hasSessionCookieOnRequest(request)) {
-        return redirectTo(request, "/admin/login");
+        return next(request);
       }
       try {
         const session = await auth.api.getSession({
           headers: request.headers,
+          method: "GET",
         });
         if (!session) {
-          return redirectTo(request, "/admin/login");
+          // Never redirect Server Action POSTs — Next.js then parses HTML
+          // and the client throws "An unexpected response was received".
+          return next(request);
         }
         const suspended = Boolean(
           (session.user as { suspended?: boolean | null }).suspended,
         );
         if (suspended) {
-          return redirectTo(request, "/admin/login");
+          return next(request);
         }
         if (isAdminOnlyPath(pathname)) {
           const role =
             (session.user as { role?: string | null }).role ?? "author";
           if (role !== "admin") {
-            return redirectTo(request, "/admin");
+            return next(request);
           }
         } else if (isEditorPlusPath(pathname)) {
           const role =
             (session.user as { role?: string | null }).role ?? "author";
           if (role !== "admin" && role !== "editor") {
-            return redirectTo(request, "/admin");
+            return next(request);
           }
         }
       } catch {
@@ -278,6 +304,7 @@ export async function middleware(request: NextRequest) {
 
         const session = await auth.api.getSession({
           headers: request.headers,
+          method: "GET",
         });
         const role =
           (session?.user as { role?: string | null } | undefined)?.role ?? null;
@@ -310,9 +337,15 @@ export async function middleware(request: NextRequest) {
       return redirectTo(request, "/admin/login");
     }
 
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+    let session: Awaited<ReturnType<typeof auth.api.getSession>>;
+    try {
+      session = await auth.api.getSession({
+        headers: request.headers,
+        method: "GET",
+      });
+    } catch {
+      return next(request);
+    }
 
     if (!session) {
       return redirectTo(request, "/admin/login");
@@ -345,6 +378,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|woff|woff2|ttf|map|txt|xml|json|webmanifest)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/admin/upload|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|css|js|woff|woff2|ttf|map|txt|xml|json|webmanifest)$).*)",
   ],
 };

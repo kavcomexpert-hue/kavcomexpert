@@ -27,6 +27,23 @@ export function hasSessionCookie(store: CookieReader): boolean {
   return false;
 }
 
+/** True when a Cookie header string contains a Better Auth session token. */
+export function cookieHeaderHasSession(
+  cookieHeader: string | null | undefined,
+): boolean {
+  if (!cookieHeader) return false;
+  const parts = cookieHeader.split(";");
+  for (const name of SESSION_TOKEN_NAMES) {
+    for (const part of parts) {
+      const eq = part.indexOf("=");
+      const rawName = (eq === -1 ? part : part.slice(0, eq)).trim();
+      const value = (eq === -1 ? "" : part.slice(eq + 1)).trim();
+      if (rawName === name && value.length > 0) return true;
+    }
+  }
+  return false;
+}
+
 /** Middleware / RequestCookies helper. */
 export function hasSessionCookieOnRequest(request: {
   cookies: CookieReader;

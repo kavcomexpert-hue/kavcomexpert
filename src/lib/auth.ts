@@ -5,6 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { logAudit } from "@/lib/audit";
+import { trustedAuthOrigins } from "@/lib/security/trusted-origins";
 import { eq } from "drizzle-orm";
 
 export const auth = betterAuth({
@@ -44,6 +45,7 @@ export const auth = betterAuth({
   },
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: trustedAuthOrigins(),
   advanced: {
     ipAddress: {
       ipAddressHeaders: [
